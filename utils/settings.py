@@ -1,5 +1,7 @@
 from pathlib import Path
 import sys
+from streamlit_webrtc import RTCConfiguration
+import numpy as np
 
 # Get the absolute path of the current file
 file_path = Path(__file__).resolve()
@@ -42,8 +44,12 @@ VIDEO_DIR = ROOT / 'videos'
 # }
 
 # ML Model config
-MODEL_DIR = ROOT / 'models'
+MODEL_DIR = ROOT / 'model'
 LSTM_MODEL = MODEL_DIR / 'model3.h5'
+
+MODEL_ACTIONS = np.array(["maaf", "tolong", "nama", "saya", "siapa", "rumah", "start", "standby", "delete"])
+MODEL_SEQUENCES = 30
+MODEL_SEQUENCES_LENGTH = 30
 
 # In case of your custome model comment out the line above and
 # Place your custom model pt file name at the line below 
@@ -52,3 +58,6 @@ LSTM_MODEL = MODEL_DIR / 'model3.h5'
 # Video Settings
 VIDEO_WIDTH = 640
 VIDEO_HEIGHT = 480
+
+# Web RTC Config
+RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
