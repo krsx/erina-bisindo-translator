@@ -12,6 +12,7 @@ from mediapipe.framework.formats import landmark_pb2
 import av
 import threading
 import queue
+from collections import deque
 import math
 
 from tensorflow.keras.models import Sequential
@@ -23,31 +24,17 @@ from tensorflow.keras.regularizers import l2
 import utils.settings as settings
 import utils.helper as helper
 
-lock = threading.Lock()
-result = queue.Queue()
-
 mp_holistic = mp.solutions.holistic
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
-
 holistic_model = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-lstm_model = Sequential()
-
-lstm_model.add(TimeDistributed(Dense(units=128, activation='tanh'), input_shape=(30, 108)))
-lstm_model.add(LSTM(128, return_sequences=True, activation='tanh'))
-lstm_model.add(Dropout(0.5))
-lstm_model.add(LSTM(64, return_sequences=False, activation='tanh'))
-lstm_model.add(Dropout(0.5))
-lstm_model.add(Dense(32, activation='relu'))
-lstm_model.add(Dropout(0.2))
-lstm_model.add(Dense(settings.MODEL_ACTIONS.shape[0], activation='softmax'))
-
-lstm_model.load_weights(settings.LSTM_MODEL)
-
 sequence = []
-sentence = []
 predictions = []
+sentenceTemp = []
+
+fpsQueue = queue.Queue()
+sentenceQueue = deque(maxlen=settings.MAX_SENTENCES)
 
 prev_frame_time = time.time()
 
@@ -99,27 +86,21 @@ def draw_land_marks(image, results):
 
 def mediapipe_callback(frame):
     global prev_frame_time
-    global result
+    global fpsQueue
 
     new_frame_time = time.time()
 
     img = frame.to_ndarray(format="bgr24")
 
     img, results = media_pipe_detection(img, holistic_model)
-
     draw_land_marks(img, results)
 
     fps = 1 / (new_frame_time - prev_frame_time)
     prev_frame_time = new_frame_time
 
-    # Log FPS or update an external metric
     print(fps)
-    result.put(fps)
+    fpsQueue.put(fps)
 
-    # with lock:
-    #     result = fps
-
-    # Convert the processed image back to a VideoFrame
     new_frame = av.VideoFrame.from_ndarray(img, format="bgr24")
 
     return new_frame
@@ -157,45 +138,61 @@ def extract_keypoints_normalize(results):
 
     return np.concatenate([pose, left_hand, right_hand])
 
+def deque_sentence(que, number_of_sentence = settings.MAX_SENTENCES):
+    temp = []
+
+    while not que.empty():
+        temp.append(que.get())
+
+    last_sentences = temp[-5:]
+
+    for item in temp:
+        que.put(item)
+
+    return last_sentences
+
 def load_lstm_model():
     model = Sequential()
 
-    model.add(TimeDistributed(Dense(units=128, activation='tanh'), input_shape=(30, 108)))
-    model.add(LSTM(128, return_sequences=True, activation='tanh'))
-    model.add(Dropout(0.5))
-    model.add(LSTM(64, return_sequences=False, activation='tanh'))
-    model.add(Dropout(0.5))
-    model.add(Dense(32, activation='relu'))
-    model.add(Dropout(0.2))
-    model.add(Dense(settings.MODEL_ACTIONS.shape[0], activation='softmax'))
+    model.add(TimeDistributed(Dense(units=128, activation='tanh'), input_shape=(30, 108), name='time_distributed_dense'))
+    model.add(LSTM(128, return_sequences=True, activation='tanh', name='lstm_1'))
+    model.add(Dropout(0.5, name='dropout_1'))
+    model.add(LSTM(64, return_sequences=False, activation='tanh', name='lstm_2'))
+    model.add(Dropout(0.5, name='dropout_2'))
+    model.add(Dense(32, activation='relu', name='dense_1'))
+    model.add(Dropout(0.2, name='dropout_3'))
+    model.add(Dense(settings.MODEL_ACTIONS.shape[0], activation='softmax', name='output_dense'))
 
     model.load_weights(settings.LSTM_MODEL)
 
     return model 
 
+lstm_model = load_lstm_model()
+
 def lstm_callback(frame):
+    global prev_frame_time
+
     global sequence
-    global sentence
     global predictions
+    global sentenceTemp
+    
+    global fpsQueue
+    global sentenceQueue
 
     threshold = 0.5 
+    actions = np.array(["maaf", "tolong", "nama", "saya", "siapa", "rumah", "start", "standby", "delete"])
 
     img = frame.to_ndarray(format="bgr24")
 
-    img, results = media_pipe_detection(img, holistic_model)
+    new_frame_time = time.time()
 
+    img, results = media_pipe_detection(img, holistic_model)
     draw_land_marks(img, results)
-   
-    actions = np.array(["maaf", "tolong", "nama", "saya", "siapa", "rumah", "start", "standby", "delete"])
 
     keypoints = extract_keypoints_normalize(results)
 
     sequence.append(keypoints)
-
     sequence = sequence[-30:]
-
-    print(len(sequence))
-
 
     if len(sequence) == 30:
         sequence_array = np.array(sequence)
@@ -204,22 +201,30 @@ def lstm_callback(frame):
             print(actions[np.argmax(res)])
             print(res)
             print("")
+
             predictions.append(np.argmax(res))
                 
             if np.unique(predictions[-10:])[0] == np.argmax(res):
                 if res[np.argmax(res)] > threshold:
-                    if len(sentence) > 0: 
-                        if actions[np.argmax(res)] != sentence[-1]:
-                            sentence.append(actions[np.argmax(res)])
-                            result.put(actions[np.argmax(res)])
+        
+                    if len(sentenceTemp) > 0: 
+                        if actions[np.argmax(res)] != sentenceTemp[-1]:
+                            sentenceQueue.append(actions[np.argmax(res)])
+                            sentenceTemp.append(actions[np.argmax(res)])
                     else:
-                        sentence.append(actions[np.argmax(res)])
-                        result.put(actions[np.argmax(res)])
+                        sentenceQueue.append(actions[np.argmax(res)])
+                        sentenceTemp.append(actions[np.argmax(res)])
 
-            if len(sentence) > 5: 
-                sentence = sentence[-5:]
-                
+            # if len(sentenceTemp) > 5: 
+            #    sentenceTemp = sentenceTemp[-5:]
+            #    deque_sentence(sentenceQueue)
+                        
+    fps = 1 / (new_frame_time - prev_frame_time)
+    prev_frame_time = new_frame_time
 
+    print(fps)
+    fpsQueue.put(fps)
+         
     new_frame = av.VideoFrame.from_ndarray(img, format="bgr24")
 
     return new_frame
@@ -273,17 +278,21 @@ with col2.container():
     elif mode_type == settings.WEBCAM:
         ctx = webrtc_streamer(key="example", 
                         rtc_configuration=settings.RTC_CONFIGURATION, 
-                        video_frame_callback=mediapipe_callback,
+                        video_frame_callback=lstm_callback,
                     media_stream_constraints={"video": {"width": settings.VIDEO_WIDTH, "height": settings.VIDEO_HEIGHT}, 
                                             "audio": False})
         
         if ctx.state.playing:
             result_placeholder = st.empty()
+            sentence_placeholder = st.empty()
 
             while True:
-                fps = result.get()
-                result_placeholder.markdown(fps)
-
+                result_fps = fpsQueue.get()
+                result_placeholder.markdown(result_fps)    
+                
+                print(sentenceQueue)
+                sentence_placeholder.markdown(' '.join(sentenceQueue))
+                    
         #  webrtc_streamer(key="example", 
         #                 rtc_configuration=settings.RTC_CONFIGURATION, 
         #                video_transformer_factory=helper.MediaPipeTransformer,
@@ -293,7 +302,7 @@ with col2.container():
     elif mode_type == settings.WEBCAM_MEDIAPIPE:
         ctx = webrtc_streamer(key="example", 
                         rtc_configuration=settings.RTC_CONFIGURATION, 
-                        video_frame_callback=lstm_callback,
+                        video_frame_callback=mediapipe_callback,
                     media_stream_constraints={"video": {"width": settings.VIDEO_WIDTH, "height": settings.VIDEO_HEIGHT}, 
                                             "audio": False})
         
@@ -301,7 +310,7 @@ with col2.container():
             result_placeholder = st.empty()
 
             while True:
-                word = result.get()
+                word = fpsQueue.get()
                 result_placeholder.markdown(word)
 
         # webrtc_streamer(key="example", 
@@ -310,9 +319,6 @@ with col2.container():
         #              media_stream_constraints={"video": {"width": settings.VIDEO_WIDTH, "height": settings.VIDEO_HEIGHT}, 
         #                                     "audio": False})
     
-
-
-
 col3.empty()
 
 # STREAMLIT UI

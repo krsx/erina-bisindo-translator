@@ -61,3 +61,6 @@ VIDEO_HEIGHT = 480
 
 # Web RTC Config
 RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+
+# Maximal sentence appear
+MAX_SENTENCES = 5
