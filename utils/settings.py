@@ -64,3 +64,10 @@ RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.goog
 
 # Maximal sentence appear
 MAX_SENTENCES = 5
+
+# Program status
+STATUS_STANDBY = "standby"
+STATUS_NOT_STANDBY = "not-standby"
+STATUS_DELETE = "delete"
+STATUS_TRANSLATE = "translate"
+STATUS_START = "start"

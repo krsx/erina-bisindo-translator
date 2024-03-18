@@ -31,10 +31,15 @@ holistic_model = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking
 
 sequence = []
 predictions = []
-sentenceTemp = []
+sentence_temp = []
+program_status = ""
 
-fpsQueue = queue.Queue()
-sentenceQueue = deque(maxlen=settings.MAX_SENTENCES)
+fps_queue = queue.Queue()
+sentence_queue = deque(maxlen=settings.MAX_SENTENCES)
+program_status_queue = deque(maxlen=1)
+
+in_standby = False
+has_spoken = False
 
 prev_frame_time = time.time()
 
@@ -86,7 +91,7 @@ def draw_land_marks(image, results):
 
 def mediapipe_callback(frame):
     global prev_frame_time
-    global fpsQueue
+    global fps_queue
 
     new_frame_time = time.time()
 
@@ -99,7 +104,7 @@ def mediapipe_callback(frame):
     prev_frame_time = new_frame_time
 
     print(fps)
-    fpsQueue.put(fps)
+    fps_queue.put(fps)
 
     new_frame = av.VideoFrame.from_ndarray(img, format="bgr24")
 
@@ -138,19 +143,6 @@ def extract_keypoints_normalize(results):
 
     return np.concatenate([pose, left_hand, right_hand])
 
-def deque_sentence(que, number_of_sentence = settings.MAX_SENTENCES):
-    temp = []
-
-    while not que.empty():
-        temp.append(que.get())
-
-    last_sentences = temp[-5:]
-
-    for item in temp:
-        que.put(item)
-
-    return last_sentences
-
 def load_lstm_model():
     model = Sequential()
 
@@ -174,10 +166,14 @@ def lstm_callback(frame):
 
     global sequence
     global predictions
-    global sentenceTemp
+    global sentence_temp
+    global program_status
     
-    global fpsQueue
-    global sentenceQueue
+    global fps_queue
+    global sentence_queue
+
+    global in_standby
+    global has_spoken
 
     threshold = 0.5 
     actions = np.array(["maaf", "tolong", "nama", "saya", "siapa", "rumah", "start", "standby", "delete"])
@@ -188,7 +184,6 @@ def lstm_callback(frame):
 
     img, results = media_pipe_detection(img, holistic_model)
     draw_land_marks(img, results)
-
     keypoints = extract_keypoints_normalize(results)
 
     sequence.append(keypoints)
@@ -206,24 +201,64 @@ def lstm_callback(frame):
                 
             if np.unique(predictions[-10:])[0] == np.argmax(res):
                 if res[np.argmax(res)] > threshold:
-        
-                    if len(sentenceTemp) > 0: 
-                        if actions[np.argmax(res)] != sentenceTemp[-1]:
-                            sentenceQueue.append(actions[np.argmax(res)])
-                            sentenceTemp.append(actions[np.argmax(res)])
-                    else:
-                        sentenceQueue.append(actions[np.argmax(res)])
-                        sentenceTemp.append(actions[np.argmax(res)])
 
-            # if len(sentenceTemp) > 5: 
-            #    sentenceTemp = sentenceTemp[-5:]
-            #    deque_sentence(sentenceQueue)
-                        
+                    print("MASUK STATUS: " + program_status)
+
+                    if actions[np.argmax(res)] == settings.STATUS_STANDBY:
+                        in_standby = True
+                        program_status = settings.STATUS_STANDBY
+                        program_status_queue.append(settings.STATUS_STANDBY)
+
+                        print(program_status)
+
+
+                    if in_standby and program_status != settings.STATUS_TRANSLATE:
+
+                        # Temporary uses "DELETE" as sign to convert (translate) into sound
+                        if actions[np.argmax(res)] == settings.STATUS_DELETE and not has_spoken:
+                            in_standby = False
+                            has_spoken = True
+
+                            program_status = settings.STATUS_TRANSLATE
+                            program_status_queue.append(settings.STATUS_TRANSLATE)
+
+                            print("SUARA")
+                            print("SUARA")
+                            print("SUARA")
+
+                            # ASYNC SOUND FUNCTION
+                        else:
+                            if len(sentence_temp) > 0:
+                                if (actions[np.argmax(res)] != settings.STATUS_STANDBY and actions[np.argmax(res)] != settings.STATUS_START and actions[np.argmax(res)] != settings.STATUS_DELETE):
+                                    if actions[np.argmax(res)] != sentence_temp[-1]:
+                                        in_standby = False
+                                        program_status = settings.STATUS_NOT_STANDBY
+                                        program_status_queue.append(settings.STATUS_NOT_STANDBY)
+
+                                        print(program_status)
+
+                                        sentence_queue.append(actions[np.argmax(res)])
+                                        sentence_temp.append(actions[np.argmax(res)])
+
+                            else:
+                                if (actions[np.argmax(res)] != settings.STATUS_STANDBY and actions[np.argmax(res)] != settings.STATUS_START and actions[np.argmax(res)] != settings.STATUS_DELETE):
+
+                                    in_standby = False
+                                    program_status = settings.STATUS_NOT_STANDBY
+                                    program_status_queue.append(settings.STATUS_NOT_STANDBY)
+
+                                    print(program_status)
+
+                                    sentence_queue.append(actions[np.argmax(res)])
+                                    sentence_temp.append(actions[np.argmax(res)])
+                                        
+    if len(sentence_temp) > 5: 
+        sentence_temp = sentence_temp[-5:]
+              
     fps = 1 / (new_frame_time - prev_frame_time)
     prev_frame_time = new_frame_time
 
-    print(fps)
-    fpsQueue.put(fps)
+    fps_queue.put(fps)
          
     new_frame = av.VideoFrame.from_ndarray(img, format="bgr24")
 
@@ -256,7 +291,7 @@ mode_type = st.sidebar.selectbox(
     "", [settings.VIDEO, settings.WEBCAM, settings.WEBCAM_MEDIAPIPE])
 
 # HANDLE MENUS
-col1, col2, col3= st.columns([0.1,0.8, 0.1])
+col1, col2, col3= st.columns([0.15,0.7, 0.15])
 
 col1.empty()
 with col2.container():
@@ -285,13 +320,16 @@ with col2.container():
         if ctx.state.playing:
             result_placeholder = st.empty()
             sentence_placeholder = st.empty()
+            program_status_placeholder = st.empty()
 
             while True:
-                result_fps = fpsQueue.get()
+                result_fps = fps_queue.get()
                 result_placeholder.markdown(result_fps)    
                 
-                print(sentenceQueue)
-                sentence_placeholder.markdown(' '.join(sentenceQueue))
+                sentence_placeholder.markdown(' '.join(sentence_queue))
+
+                program_status_placeholder.markdown(' '.join(program_status_queue))
+                
                     
         #  webrtc_streamer(key="example", 
         #                 rtc_configuration=settings.RTC_CONFIGURATION, 
@@ -310,7 +348,7 @@ with col2.container():
             result_placeholder = st.empty()
 
             while True:
-                word = fpsQueue.get()
+                word = fps_queue.get()
                 result_placeholder.markdown(word)
 
         # webrtc_streamer(key="example", 
