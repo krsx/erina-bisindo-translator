@@ -11,9 +11,16 @@ from mediapipe.python.solutions.drawing_utils import DrawingSpec
 from mediapipe.framework.formats import landmark_pb2
 import av
 import threading
+import asyncio
 import queue
 from collections import deque
 import math
+from gtts import gTTS
+import tempfile
+import sounddevice as sd
+import soundfile as sf
+import pygame
+from random import random
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout, TimeDistributed
@@ -23,6 +30,8 @@ from tensorflow.keras.regularizers import l2
 
 import utils.settings as settings
 import utils.helper as helper
+
+# INIT
 
 mp_holistic = mp.solutions.holistic
 mp_drawing = mp.solutions.drawing_utils
@@ -41,7 +50,22 @@ program_status_queue = deque(maxlen=1)
 in_standby = False
 has_spoken = False
 
+pygame.mixer.init()
+
+def start_event_loop():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+loop_thread = threading.Thread(target=start_event_loop, daemon=True)
+loop_thread.start()
+
 prev_frame_time = time.time()
+
+# INIT
+
+
+# LOGIC
 
 def media_pipe_detection(image, model):
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -161,6 +185,36 @@ def load_lstm_model():
 
 lstm_model = load_lstm_model()
 
+async def async_tts_and_play(text):
+    # Generate speech from text
+
+    try:
+        tts = gTTS(text=text, lang='en')
+        temp_file = f"/tmp/{random()}.mp3"
+        tts.save(temp_file)
+        filename = temp_file
+    except Exception as e:
+        print(f"Error during TTS generation or file handling: {e}")
+
+    
+    # Define a function for blocking audio playback
+    def play_audio_blocking():
+        global has_spoken
+        
+        try:
+            pygame.mixer.music.load(filename)
+            pygame.mixer.music.play()
+
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
+
+        finally:
+            has_spoken = False
+            os.remove(filename)
+
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, play_audio_blocking)
+
 def lstm_callback(frame):
     global prev_frame_time
 
@@ -202,15 +256,12 @@ def lstm_callback(frame):
             if np.unique(predictions[-10:])[0] == np.argmax(res):
                 if res[np.argmax(res)] > threshold:
 
-                    print("MASUK STATUS: " + program_status)
-
-                    if actions[np.argmax(res)] == settings.STATUS_STANDBY:
+                    if actions[np.argmax(res)] == settings.STATUS_STANDBY and not has_spoken:
                         in_standby = True
                         program_status = settings.STATUS_STANDBY
                         program_status_queue.append(settings.STATUS_STANDBY)
 
-                        print(program_status)
-
+                        # print(program_status)
 
                     if in_standby and program_status != settings.STATUS_TRANSLATE:
 
@@ -222,11 +273,9 @@ def lstm_callback(frame):
                             program_status = settings.STATUS_TRANSLATE
                             program_status_queue.append(settings.STATUS_TRANSLATE)
 
-                            print("SUARA")
-                            print("SUARA")
-                            print("SUARA")
+                            current_loop = asyncio.get_event_loop()
+                            asyncio.run_coroutine_threadsafe(async_tts_and_play(' '.join(sentence_temp)), current_loop)
 
-                            # ASYNC SOUND FUNCTION
                         else:
                             if len(sentence_temp) > 0:
                                 if (actions[np.argmax(res)] != settings.STATUS_STANDBY and actions[np.argmax(res)] != settings.STATUS_START and actions[np.argmax(res)] != settings.STATUS_DELETE):
@@ -235,7 +284,7 @@ def lstm_callback(frame):
                                         program_status = settings.STATUS_NOT_STANDBY
                                         program_status_queue.append(settings.STATUS_NOT_STANDBY)
 
-                                        print(program_status)
+                                        # print(program_status)
 
                                         sentence_queue.append(actions[np.argmax(res)])
                                         sentence_temp.append(actions[np.argmax(res)])
@@ -247,7 +296,7 @@ def lstm_callback(frame):
                                     program_status = settings.STATUS_NOT_STANDBY
                                     program_status_queue.append(settings.STATUS_NOT_STANDBY)
 
-                                    print(program_status)
+                                    # print(program_status)
 
                                     sentence_queue.append(actions[np.argmax(res)])
                                     sentence_temp.append(actions[np.argmax(res)])
@@ -263,6 +312,8 @@ def lstm_callback(frame):
     new_frame = av.VideoFrame.from_ndarray(img, format="bgr24")
 
     return new_frame
+
+# LOGIC
 
 
 # STREAMLIT UI
@@ -321,7 +372,6 @@ with col2.container():
             result_placeholder = st.empty()
             sentence_placeholder = st.empty()
             program_status_placeholder = st.empty()
-
             while True:
                 result_fps = fps_queue.get()
                 result_placeholder.markdown(result_fps)    
@@ -329,13 +379,6 @@ with col2.container():
                 sentence_placeholder.markdown(' '.join(sentence_queue))
 
                 program_status_placeholder.markdown(' '.join(program_status_queue))
-                
-                    
-        #  webrtc_streamer(key="example", 
-        #                 rtc_configuration=settings.RTC_CONFIGURATION, 
-        #                video_transformer_factory=helper.MediaPipeTransformer,
-        #              media_stream_constraints={"video": {"width": settings.VIDEO_WIDTH, "height": settings.VIDEO_HEIGHT}, 
-        #                                     "audio": False})
         
     elif mode_type == settings.WEBCAM_MEDIAPIPE:
         ctx = webrtc_streamer(key="example", 
@@ -350,12 +393,6 @@ with col2.container():
             while True:
                 word = fps_queue.get()
                 result_placeholder.markdown(word)
-
-        # webrtc_streamer(key="example", 
-        #                 rtc_configuration=settings.RTC_CONFIGURATION, 
-        #                video_transformer_factory=helper.MediaPipeTransformer,
-        #              media_stream_constraints={"video": {"width": settings.VIDEO_WIDTH, "height": settings.VIDEO_HEIGHT}, 
-        #                                     "audio": False})
     
 col3.empty()
 
