@@ -62,7 +62,7 @@ loop_thread.start()
 
 prev_frame_time = time.time()
 
-# INIT
+# INIT-END
 
 
 # LOGIC
@@ -229,7 +229,7 @@ def lstm_callback(frame):
     global in_standby
     global has_spoken
 
-    threshold = 0.5 
+    threshold = 0.4 
     actions = np.array(["maaf", "tolong", "nama", "saya", "siapa", "rumah", "start", "standby", "delete"])
 
     img = frame.to_ndarray(format="bgr24")
@@ -263,7 +263,7 @@ def lstm_callback(frame):
 
                         # print(program_status)
 
-                    if in_standby and program_status != settings.STATUS_TRANSLATE:
+                    if in_standby and program_status != settings.STATUS_TRANSLATE and program_status != settings.STATUS_DELETE:
 
                         # Temporary uses "DELETE" as sign to convert (translate) into sound
                         if actions[np.argmax(res)] == settings.STATUS_DELETE and not has_spoken:
@@ -276,6 +276,15 @@ def lstm_callback(frame):
                             current_loop = asyncio.get_event_loop()
                             asyncio.run_coroutine_threadsafe(async_tts_and_play(' '.join(sentence_temp)), current_loop)
 
+                        # Uses "START" as sign to delete (pop) last word from sentence
+                        elif actions[np.argmax(res)] == settings.STATUS_START and not has_spoken and len(sentence_temp) > 0:
+                            in_standby = False
+                            has_spoken = False
+
+                            program_status = settings.STATUS_DELETE
+                            program_status_queue.append(settings.STATUS_DELETE)
+
+                            sentence_queue.pop()
                         else:
                             if len(sentence_temp) > 0:
                                 if (actions[np.argmax(res)] != settings.STATUS_STANDBY and actions[np.argmax(res)] != settings.STATUS_START and actions[np.argmax(res)] != settings.STATUS_DELETE):
@@ -313,7 +322,20 @@ def lstm_callback(frame):
 
     return new_frame
 
-# LOGIC
+# def process_local_video():
+#     # source_vid = st.sidebar.selectbox("Choose a video", settings.VIDEOS_DICT.keys())
+
+#     # with open(settings.VIDEOS_DICT.get(source_vid), 'rb') as video_file:
+#     #     video_bytes = video_file.read()
+#     # if video_bytes:
+#     #     st.video(video_bytes)
+
+
+#     if st.button("Translate Video"):
+#         st.markdown("Test")
+
+# LOGIC-END
+
 
 
 # STREAMLIT UI
@@ -327,7 +349,7 @@ st.set_page_config(
 )
 
 # SIDEBAR
-st.sidebar.title("Menus")
+st.sidebar.title("BISINDO Translator Using Long Short Term Memory (LSTM)")
 st.sidebar.markdown("""
     <style>
     .wrapper {
@@ -339,29 +361,30 @@ st.sidebar.markdown("""
     </div>
 """, unsafe_allow_html=True)
 mode_type = st.sidebar.selectbox(
-    "", [settings.VIDEO, settings.WEBCAM, settings.WEBCAM_MEDIAPIPE])
+    "", [settings.WEBCAM, settings.WEBCAM_MEDIAPIPE])
 
 # HANDLE MENUS
 col1, col2, col3= st.columns([0.15,0.7, 0.15])
 
 col1.empty()
 with col2.container():
-    st.title("BISINDO Translator Using Long Short Term Memory (LSTM)")
+    # st.title("BISINDO Translator Using Long Short Term Memory (LSTM)")
 
-    if mode_type == settings.VIDEO:
-        st.markdown("""
-        <style>
-        .wrapper {
-            word-wrap: break-word;
-        }
-        </style>
-        <div class="wrapper">
-            Under maintenance.&nbsp
-            For translator, we recommend you to use the webcam first for better experience
-        </div>
-    """, unsafe_allow_html=True)
+    # if mode_type == settings.VIDEO:
+    #     process_local_video()
+    #     st.markdown("""
+    #     <style>
+    #     .wrapper {
+    #         word-wrap: break-word;
+    #     }
+    #     </style>
+    #     <div class="wrapper">
+    #         Under maintenance.&nbsp
+    #         For translator, we recommend you to use the webcam first for better experience
+    #     </div>
+    # """, unsafe_allow_html=True)
         
-    elif mode_type == settings.WEBCAM:
+    if mode_type == settings.WEBCAM:
         ctx = webrtc_streamer(key="example", 
                         rtc_configuration=settings.RTC_CONFIGURATION, 
                         video_frame_callback=lstm_callback,
@@ -374,11 +397,23 @@ with col2.container():
             program_status_placeholder = st.empty()
             while True:
                 result_fps = fps_queue.get()
-                result_placeholder.markdown(result_fps)    
+              
+                sentence_placeholder.markdown("""
+                                            #### Kalimat: {} 
+                                            """.format(' '.join(sentence_queue)))
                 
-                sentence_placeholder.markdown(' '.join(sentence_queue))
+                program_status_placeholder.markdown("""
+                                            #### Program : {} 
+                                            """.format(' '.join(program_status_queue)))
+              
+                result_placeholder.markdown("""
+                                            #### FPS: {} 
+                                            """.format(result_fps))    
+            
+                
+                # sentence_placeholder.markdown(' '.join(sentence_queue))
 
-                program_status_placeholder.markdown(' '.join(program_status_queue))
+                # program_status_placeholder.markdown(' '.join(program_status_queue))
         
     elif mode_type == settings.WEBCAM_MEDIAPIPE:
         ctx = webrtc_streamer(key="example", 
@@ -396,6 +431,6 @@ with col2.container():
     
 col3.empty()
 
-# STREAMLIT UI
+# STREAMLIT UI-END
 
 

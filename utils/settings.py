@@ -25,7 +25,7 @@ WEBCAM_MEDIAPIPE = 'Webcam (Mediapipe)'
 # YOUTUBE = 'YouTube'
 
 # SOURCES_LIST = [IMAGE, VIDEO, WEBCAM, RTMP, YOUTUBE]
-SOURCES_LIST = [VIDEO, WEBCAM, WEBCAM_MEDIAPIPE]
+SOURCES_LIST = [WEBCAM, WEBCAM_MEDIAPIPE]
 
 # Images config
 # IMAGES_DIR = ROOT / 'img'
@@ -57,7 +57,7 @@ MODEL_SEQUENCES_LENGTH = 30
 
 # Video Settings
 VIDEO_WIDTH = 640
-VIDEO_HEIGHT = 480
+VIDEO_HEIGHT = 400
 
 # Web RTC Config
 RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
@@ -71,3 +71,15 @@ STATUS_NOT_STANDBY = "not-standby"
 STATUS_DELETE = "delete"
 STATUS_TRANSLATE = "translate"
 STATUS_START = "start"
+
+CUSTOM_CSS = """
+<style>
+    .big-font {
+        font-size:20px !important;
+        font-weight: bold;
+    }
+    .info-text {
+        color: #5fba7d;
+    }
+</style>
+"""
