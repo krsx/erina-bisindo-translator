@@ -46,6 +46,7 @@ program_status = ""
 fps_queue = queue.Queue()
 sentence_queue = deque(maxlen=settings.MAX_SENTENCES)
 program_status_queue = deque(maxlen=1)
+sign_detection_time_queue = queue.Queue()
 
 in_standby = False
 has_spoken = False
@@ -225,6 +226,7 @@ def lstm_callback(frame):
     
     global fps_queue
     global sentence_queue
+    global sign_detection_time
 
     global in_standby
     global has_spoken
@@ -235,6 +237,7 @@ def lstm_callback(frame):
     img = frame.to_ndarray(format="bgr24")
 
     new_frame_time = time.time()
+    prev_sign_detection_time = time.time()
 
     img, results = media_pipe_detection(img, holistic_model)
     draw_land_marks(img, results)
@@ -247,6 +250,7 @@ def lstm_callback(frame):
         sequence_array = np.array(sequence)
         if sequence_array.shape == (30, 108):
             res = lstm_model.predict(np.expand_dims(sequence_array, axis=0))[0]
+            
             print(actions[np.argmax(res)])
             print(res)
             print("")
@@ -261,10 +265,11 @@ def lstm_callback(frame):
                         program_status = settings.STATUS_STANDBY
                         program_status_queue.append(settings.STATUS_STANDBY)
 
-                        # print(program_status)
+                        new_sign_detection_time = time.time()
+                        sign_detection_time_queue.put(new_sign_detection_time - prev_sign_detection_time)
 
                     if in_standby and program_status != settings.STATUS_TRANSLATE and program_status != settings.STATUS_DELETE:
-
+                        
                         # Temporary uses "DELETE" as sign to convert (translate) into sound
                         if actions[np.argmax(res)] == settings.STATUS_DELETE and not has_spoken:
                             in_standby = False
@@ -276,6 +281,9 @@ def lstm_callback(frame):
                             current_loop = asyncio.get_event_loop()
                             asyncio.run_coroutine_threadsafe(async_tts_and_play(' '.join(sentence_temp)), current_loop)
 
+                            new_sign_detection_time = time.time()
+                            sign_detection_time_queue.put(new_sign_detection_time - prev_sign_detection_time)
+
                         # Uses "START" as sign to delete (pop) last word from sentence
                         elif actions[np.argmax(res)] == settings.STATUS_START and not has_spoken and len(sentence_temp) > 0:
                             in_standby = False
@@ -285,6 +293,9 @@ def lstm_callback(frame):
                             program_status_queue.append(settings.STATUS_DELETE)
 
                             sentence_queue.pop()
+
+                            new_sign_detection_time = time.time()
+                            sign_detection_time_queue.put(new_sign_detection_time - prev_sign_detection_time)
                         else:
                             if len(sentence_temp) > 0:
                                 if (actions[np.argmax(res)] != settings.STATUS_STANDBY and actions[np.argmax(res)] != settings.STATUS_START and actions[np.argmax(res)] != settings.STATUS_DELETE):
@@ -293,10 +304,11 @@ def lstm_callback(frame):
                                         program_status = settings.STATUS_NOT_STANDBY
                                         program_status_queue.append(settings.STATUS_NOT_STANDBY)
 
-                                        # print(program_status)
-
                                         sentence_queue.append(actions[np.argmax(res)])
                                         sentence_temp.append(actions[np.argmax(res)])
+
+                                        new_sign_detection_time = time.time()
+                                        sign_detection_time_queue.put(new_sign_detection_time - prev_sign_detection_time)
 
                             else:
                                 if (actions[np.argmax(res)] != settings.STATUS_STANDBY and actions[np.argmax(res)] != settings.STATUS_START and actions[np.argmax(res)] != settings.STATUS_DELETE):
@@ -305,10 +317,11 @@ def lstm_callback(frame):
                                     program_status = settings.STATUS_NOT_STANDBY
                                     program_status_queue.append(settings.STATUS_NOT_STANDBY)
 
-                                    # print(program_status)
-
                                     sentence_queue.append(actions[np.argmax(res)])
                                     sentence_temp.append(actions[np.argmax(res)])
+
+                                    new_sign_detection_time = time.time()
+                                    sign_detection_time_queue.put(new_sign_detection_time - prev_sign_detection_time)
                                         
     if len(sentence_temp) > 5: 
         sentence_temp = sentence_temp[-5:]
@@ -392,24 +405,30 @@ with col2.container():
                                             "audio": False})
         
         if ctx.state.playing:
-            result_placeholder = st.empty()
+            fps_placeholder = st.empty()
             sentence_placeholder = st.empty()
             program_status_placeholder = st.empty()
+            sign_detection_time = st.empty()
+
             while True:
                 result_fps = fps_queue.get()
+                result_sign_detection_time = sign_detection_time_queue.get()
               
                 sentence_placeholder.markdown("""
                                             #### Kalimat: {} 
                                             """.format(' '.join(sentence_queue)))
                 
                 program_status_placeholder.markdown("""
-                                            #### Program : {} 
+                                            #### Status : {} 
                                             """.format(' '.join(program_status_queue)))
               
-                result_placeholder.markdown("""
+                fps_placeholder.markdown("""
                                             #### FPS: {} 
                                             """.format(result_fps))    
-            
+                
+                sign_detection_time.markdown("""
+                                            #### Detection Time: {} 
+                                            """.format(result_sign_detection_time))    
                 
                 # sentence_placeholder.markdown(' '.join(sentence_queue))
 
