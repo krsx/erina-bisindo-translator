@@ -115,7 +115,7 @@ def draw_land_marks(image, results):
         image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
 
 def mediapipe_callback(frame):
-    global prev_frame_time
+    global prev_frame_time  
     global fps_queue
 
     new_frame_time = time.time()
@@ -216,6 +216,19 @@ async def async_tts_and_play(text):
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, play_audio_blocking)
 
+def handle_rumah_and_delete(res):
+    rumah_index = 5
+    start_index = 6
+
+    actions = settings.MODEL_ACTIONS
+
+    if actions[np.argmax(res)] == actions[start_index] and res[rumah_index] > 0.1:
+        return rumah_index
+    elif actions[np.argmax(res)] == actions[start_index] and res[rumah_index] < 0.1:
+        return start_index
+    else:
+        return np.argmax(res)
+
 def lstm_callback(frame):
     global prev_frame_time
 
@@ -232,7 +245,7 @@ def lstm_callback(frame):
     global has_spoken
 
     threshold = 0.4 
-    actions = np.array(["maaf", "tolong", "nama", "saya", "siapa", "rumah", "start", "standby", "delete"])
+    actions = settings.MODEL_ACTIONS
 
     img = frame.to_ndarray(format="bgr24")
 
@@ -255,7 +268,8 @@ def lstm_callback(frame):
             print(res)
             print("")
 
-            predictions.append(np.argmax(res))
+            
+            predictions.append(handle_rumah_and_delete(res))
                 
             if np.unique(predictions[-10:])[0] == np.argmax(res):
                 if res[np.argmax(res)] > threshold:
@@ -296,6 +310,7 @@ def lstm_callback(frame):
 
                             new_sign_detection_time = time.time()
                             sign_detection_time_queue.put(new_sign_detection_time - prev_sign_detection_time)
+
                         else:
                             if len(sentence_temp) > 0:
                                 if (actions[np.argmax(res)] != settings.STATUS_STANDBY and actions[np.argmax(res)] != settings.STATUS_START and actions[np.argmax(res)] != settings.STATUS_DELETE):
