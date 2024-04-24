@@ -29,12 +29,14 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
-holistic_model = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+holistic_model = mp_holistic.Holistic(
+    min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
 lock = threading.Lock()
 shared_fps = 0
 
 # FUNCTION FOR MEDIAPIPE
+
 
 def media_pipe_detection(image, model):
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -42,12 +44,13 @@ def media_pipe_detection(image, model):
     results = model.process(image)
     image.flags.writeable = True
     image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
-    return image, results   
+    return image, results
+
 
 def draw_land_marks(image, results):
-   custom_pose_connections = list(mp_pose.POSE_CONNECTIONS)
+    custom_pose_connections = list(mp_pose.POSE_CONNECTIONS)
 
-   excluded_landmarks = [
+    excluded_landmarks = [
         PoseLandmark.NOSE,
         PoseLandmark.LEFT_EYE_INNER,
         PoseLandmark.LEFT_EYE,
@@ -71,16 +74,17 @@ def draw_land_marks(image, results):
         PoseLandmark.RIGHT_FOOT_INDEX
     ]
 
-   for landmark in excluded_landmarks:
+    for landmark in excluded_landmarks:
         custom_pose_connections = [
             connection_tuple for connection_tuple in custom_pose_connections if landmark.value not in connection_tuple]
 
-   mp_drawing.draw_landmarks(
+    mp_drawing.draw_landmarks(
         image, results.pose_landmarks, connections=custom_pose_connections)
-   mp_drawing.draw_landmarks(
+    mp_drawing.draw_landmarks(
         image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
-   mp_drawing.draw_landmarks(
+    mp_drawing.draw_landmarks(
         image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+
 
 def mediapipe_callback(frame):
     global prev_frame_time
@@ -98,14 +102,14 @@ def mediapipe_callback(frame):
     # prev_frame_time = new_frame_time
 
     # Log FPS or update an external metric
-    # print(f"Calculated FPS: {fps:.2f}") 
+    # print(f"Calculated FPS: {fps:.2f}")
     # if 'fps' not in st.session_state:
     #     st.session_state['fps'] = 0
 
     # st.session_state['fps'] = fps
 
     # if 'fps' in st.session_state:
-    #     print(f"Calculated FPS: {fps:.2f}") 
+    #     print(f"Calculated FPS: {fps:.2f}")
 
     # with lock:
     #     shared_fps = fps
@@ -130,7 +134,7 @@ def mediapipe_callback(frame):
 
 #     model.load_weights('model-bimbingan5v3.h5')
 
-#     return model 
+#     return model
 
 # def prob_viz(res, actions, input_frame, frame_height=480, frame_width=640, opacity=0.4):
 #     colors = [
@@ -213,19 +217,19 @@ def mediapipe_callback(frame):
 #         shoulder_length = math.sqrt((left_shoulder.x - right_shoulder.x) ** 2 + (left_shoulder.y - right_shoulder.y) ** 2)
 
 #         selected_pose_landmarks = results.pose_landmarks.landmark[11:23]
-#         pose = np.array([[(res.x - midpoint_shoulder_x) / shoulder_length, 
+#         pose = np.array([[(res.x - midpoint_shoulder_x) / shoulder_length,
 #                           (res.y - midpoint_shoulder_y) / shoulder_length] for res in selected_pose_landmarks]).flatten()
 #     else:
 #         pose = np.zeros(12 * 2)
 
 #     if results.left_hand_landmarks:
-#         left_hand = np.array([[(res.x - midpoint_shoulder_x) / shoulder_length, 
+#         left_hand = np.array([[(res.x - midpoint_shoulder_x) / shoulder_length,
 #                                (res.y - midpoint_shoulder_y) / shoulder_length] for res in results.left_hand_landmarks.landmark]).flatten()
 #     else:
 #         left_hand = np.zeros(21 * 2)
 
 #     if results.right_hand_landmarks:
-#         right_hand = np.array([[(res.x - midpoint_shoulder_x) / shoulder_length, 
+#         right_hand = np.array([[(res.x - midpoint_shoulder_x) / shoulder_length,
 #                                 (res.y - midpoint_shoulder_y) / shoulder_length] for res in results.right_hand_landmarks.landmark]).flatten()
 #     else:
 #         right_hand = np.zeros(21 * 2)
@@ -233,16 +237,12 @@ def mediapipe_callback(frame):
 #     return np.concatenate([pose, left_hand, right_hand])
 
 
-
-
-
-
-
 # CLASS FOR MEDIAPIPE
 class MediaPipeTransformer(VideoTransformerBase):
     def __init__(self):
-        self.holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)  
-        self.prev_frame_time = time.time()      
+        self.holistic = mp_holistic.Holistic(
+            min_detection_confidence=0.5, min_tracking_confidence=0.5)
+        self.prev_frame_time = time.time()
         # self.new_frame_time = 0
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
@@ -250,14 +250,15 @@ class MediaPipeTransformer(VideoTransformerBase):
 
         new_frame_time = time.time()
 
-        img = frame.to_ndarray(format="bgr24")  # Convert the frame to an ndarray
+        # Convert the frame to an ndarray
+        img = frame.to_ndarray(format="bgr24")
 
         # Process the image and get the pose
         img, results = media_pipe_detection(img, self.holistic)
-        
+
         # Draw the landmarks
         draw_land_marks(img, results)
-    
+
         # Convert the processed image back to a VideoFrame
         new_frame = av.VideoFrame.from_ndarray(img, format="bgr24")
 
@@ -267,7 +268,6 @@ class MediaPipeTransformer(VideoTransformerBase):
         with lock:
             shared_fps = fps
 
-        
         # if 'fps' in st.session_state:
         #     st.write(st.session_state['fps'])
         # else:
@@ -281,7 +281,7 @@ class MediaPipeTransformer(VideoTransformerBase):
 #     results = model.process(image)
 #     image.flags.writeable = True
 #     image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
-#     return image, results   
+#     return image, results
 
 # def draw_land_marks(image, results):
 #    custom_pose_connections = list(mp_pose.POSE_CONNECTIONS)

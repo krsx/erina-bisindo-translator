@@ -18,14 +18,15 @@ ROOT = root_path.relative_to(Path.cwd())
 
 # Sources
 # IMAGE = 'Image'
-VIDEO = 'Video'
-WEBCAM = 'Webcam'
-WEBCAM_MEDIAPIPE = 'Webcam (Mediapipe)'
+TRANSLATOR = 'Translator'
+PERFORMANCE = 'Performance'
+MEDIAPIPE = 'Mediapipe'
+
 # RTMP = 'RTMP'
 # YOUTUBE = 'YouTube'
 
 # SOURCES_LIST = [IMAGE, VIDEO, WEBCAM, RTMP, YOUTUBE]
-SOURCES_LIST = [WEBCAM, WEBCAM_MEDIAPIPE]
+SOURCES_LIST = [TRANSLATOR, PERFORMANCE, MEDIAPIPE]
 
 # Images config
 # IMAGES_DIR = ROOT / 'img'
@@ -47,12 +48,24 @@ VIDEO_DIR = ROOT / 'videos'
 MODEL_DIR = ROOT / 'model'
 LSTM_MODEL = MODEL_DIR / 'model3.h5'
 
-MODEL_ACTIONS = np.array(["maaf", "tolong", "nama", "saya", "siapa", "rumah", "start", "standby", "delete"])
+MODEL_ACTIONS = np.array(
+    [
+        "maaf",
+        "tolong",
+        "nama",
+        "saya",
+        "siapa",
+        "rumah",
+        "delete",
+        "standby",
+        "translate"
+    ]
+)
 MODEL_SEQUENCES = 30
 MODEL_SEQUENCES_LENGTH = 30
 
 # In case of your custome model comment out the line above and
-# Place your custom model pt file name at the line below 
+# Place your custom model pt file name at the line below
 # DETECTION_MODEL = MODEL_DIR / 'my_detection_model.pt'
 
 # Video Settings
@@ -60,7 +73,8 @@ VIDEO_WIDTH = 640
 VIDEO_HEIGHT = 400
 
 # Web RTC Config
-RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
 
 # Maximal sentence appear
 MAX_SENTENCES = 5
@@ -71,15 +85,3 @@ STATUS_NOT_STANDBY = "not-standby"
 STATUS_DELETE = "delete"
 STATUS_TRANSLATE = "translate"
 STATUS_START = "start"
-
-CUSTOM_CSS = """
-<style>
-    .big-font {
-        font-size:20px !important;
-        font-weight: bold;
-    }
-    .info-text {
-        color: #5fba7d;
-    }
-</style>
-"""
