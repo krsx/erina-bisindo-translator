@@ -45,10 +45,12 @@ sentence_temp = []
 program_status = ""
 
 fps_queue = queue.Queue()
+sign_detection_time_queue = queue.Queue()
+tts_time_queue = queue.Queue()
+
 sign_detected_queue = deque(maxlen=1)
 sentence_queue = deque(maxlen=settings.MAX_SENTENCES)
 program_status_queue = deque(maxlen=1)
-sign_detection_time_queue = queue.Queue()
 
 in_standby = False
 has_spoken = False
@@ -199,20 +201,36 @@ def load_lstm_model():
 
 
 async def async_tts_and_play(text):
-    # Generate speech from text
+    global tts_time_queue
+
+    start_tts_time = 0.0
+    end_tts_time = 0.0
+    tts_duration = 0.0
+    voice_duration = 0.0
 
     try:
-        tts = gTTS(text=text, lang='en')
+        start_tts_time = time.time()
+
+        tts = gTTS(text=text, lang='id')
         temp_file = f"/tmp/{random()}.mp3"
         tts.save(temp_file)
+
+        end_tts_time = time.time()
+
+        tts_duration = end_tts_time - start_tts_time
         filename = temp_file
     except Exception as e:
         print(f"Error during TTS generation or file handling: {e}")
 
-    # Define a function for blocking audio playback
-
     def play_audio_blocking():
         global has_spoken
+
+        nonlocal start_tts_time
+        nonlocal end_tts_time
+        nonlocal tts_duration
+        nonlocal voice_duration
+
+        start_tts_time = time.time()
 
         try:
             pygame.mixer.music.load(filename)
@@ -223,6 +241,10 @@ async def async_tts_and_play(text):
 
         finally:
             has_spoken = False
+            end_tts_time = time.time()
+            voice_duration = end_tts_time - start_tts_time
+
+            tts_time_queue.put(tts_duration + voice_duration)
             os.remove(filename)
 
     loop = asyncio.get_running_loop()
@@ -286,7 +308,8 @@ def lstm_callback(frame):
             print(res)
             print("")
 
-            predictions.append(handle_rumah_and_delete(res))
+            # predictions.append(handle_rumah_and_delete(res))
+            predictions.append(np.argmax(res))
 
             if np.unique(predictions[-10:])[0] == np.argmax(res) and res[np.argmax(res)] > threshold:
                 sign_detected_queue.append(actions[np.argmax(res)])
@@ -365,7 +388,7 @@ def lstm_callback(frame):
                                 sign_detection_time_queue.put(
                                     new_sign_detection_time - prev_sign_detection_time)
 
-    if len(sentence_temp) > 5:
+    if len(sentence_temp) > settings.MAX_SENTENCES:
         sentence_temp = sentence_temp[-5:]
 
     fps = 1 / (new_frame_time - prev_frame_time)
@@ -432,7 +455,7 @@ st.sidebar.markdown("""
     }
     </style>
     <div class="wrapper">
-        Please select translator mode
+        Please select program mode
     </div>
 """, unsafe_allow_html=True)
 mode_type = st.sidebar.selectbox(
@@ -461,9 +484,9 @@ with col2.container():
                 result_fps = fps_queue.get()
                 result_sign_detection_time = sign_detection_time_queue.get()
 
-                sign_detected_placeholder.markdown("""
-                                            #### Sign: {} 
-                                            """.format(' '.join(sign_detected_queue)))
+                # sign_detected_placeholder.markdown("""
+                #                             #### Sign: {}
+                #                             """.format(' '.join(sign_detected_queue)))
 
                 sentence_placeholder.markdown("""
                                             #### Kalimat: {} 
@@ -473,13 +496,13 @@ with col2.container():
                                             #### Status : {} 
                                             """.format(' '.join(program_status_queue)))
 
-                fps_placeholder.markdown("""
-                                            #### FPS: {} 
-                                            """.format(result_fps))
+                # fps_placeholder.markdown("""
+                #                             #### FPS: {}
+                #                             """.format(result_fps))
 
-                sign_detection_time.markdown("""
-                                            #### Detection Time: {} 
-                                            """.format(result_sign_detection_time))
+                # sign_detection_time.markdown("""
+                #                             #### Detection Time: {}
+                #                             """.format(result_sign_detection_time))
 
     elif mode_type == settings.PERFORMANCE:
         ctx = webrtc_streamer(key="example",
@@ -493,10 +516,16 @@ with col2.container():
             sign_detected_placeholder = st.empty()
             program_status_placeholder = st.empty()
             sign_detection_time = st.empty()
+            tts_time = st.empty()
 
             while True:
                 result_fps = fps_queue.get()
                 result_sign_detection_time = sign_detection_time_queue.get()
+                try:
+                    result_tts_time = tts_time_queue.get(timeout=0.5)
+                except queue.Empty:
+                    print("Timeout: No TTS duration data available.")
+                    result_tts_time = None
 
                 sign_detected_placeholder.markdown("""
                                             #### Sign: {} 
@@ -513,6 +542,10 @@ with col2.container():
                 sign_detection_time.markdown("""
                                             #### Detection Time: {} 
                                             """.format(result_sign_detection_time))
+
+                # tts_time.markdown(
+                #     """#### TTS Time: {}
+                #     """.format(result_tts_time))
 
     elif mode_type == settings.MEDIAPIPE:
         ctx = webrtc_streamer(key="example",
