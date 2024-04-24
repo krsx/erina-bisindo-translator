@@ -201,8 +201,6 @@ def load_lstm_model():
 
 
 async def async_tts_and_play(text):
-    global tts_time_queue
-
     start_tts_time = 0.0
     end_tts_time = 0.0
     tts_duration = 0.0
@@ -224,6 +222,7 @@ async def async_tts_and_play(text):
 
     def play_audio_blocking():
         global has_spoken
+        global tts_time_queue
 
         nonlocal start_tts_time
         nonlocal end_tts_time
@@ -324,9 +323,7 @@ def lstm_callback(frame):
                         new_sign_detection_time - prev_sign_detection_time)
 
                 if in_standby and program_status != settings.STATUS_TRANSLATE and program_status != settings.STATUS_DELETE:
-
-                    # Temporary uses "DELETE" as sign to convert (translate) into sound
-                    if actions[np.argmax(res)] == settings.STATUS_DELETE and not has_spoken:
+                    if actions[np.argmax(res)] == settings.STATUS_TRANSLATE and not has_spoken:
                         in_standby = False
                         has_spoken = True
 
@@ -335,14 +332,13 @@ def lstm_callback(frame):
 
                         current_loop = asyncio.get_event_loop()
                         asyncio.run_coroutine_threadsafe(
-                            async_tts_and_play(' '.join(sentence_temp)), current_loop)
+                            async_tts_and_play(' '.join(sentence_queue)), current_loop)
 
                         new_sign_detection_time = time.time()
                         sign_detection_time_queue.put(
                             new_sign_detection_time - prev_sign_detection_time)
 
-                        # Uses "START" as sign to delete (pop) last word from sentence
-                    elif actions[np.argmax(res)] == settings.STATUS_START and not has_spoken and len(sentence_temp) > 0:
+                    elif actions[np.argmax(res)] == settings.STATUS_DELETE and not has_spoken and len(sentence_temp) > 0:
                         in_standby = False
                         has_spoken = False
 
@@ -350,6 +346,7 @@ def lstm_callback(frame):
                         program_status_queue.append(settings.STATUS_DELETE)
 
                         sentence_queue.pop()
+                        # sentence_queue.remove(sentence_queue)
 
                         new_sign_detection_time = time.time()
                         sign_detection_time_queue.put(
@@ -431,6 +428,7 @@ def format_sentence(sentence):
         # tolong + saya
         elif sentence_result[0] == actions[1] and sentence_result[1] == actions[3]:
             return "tolong bantu saya"
+
     return ' '.join(sentence)
 
 
@@ -490,15 +488,15 @@ with col2.container():
 
                 sentence_placeholder.markdown("""
                                             #### Kalimat: {} 
-                                            """.format(format_sentence(sentence_queue)))
+                                            """.format(' '.join(sentence_queue)))
 
                 program_status_placeholder.markdown("""
                                             #### Status : {} 
                                             """.format(' '.join(program_status_queue)))
 
-                # fps_placeholder.markdown("""
-                #                             #### FPS: {}
-                #                             """.format(result_fps))
+                fps_placeholder.markdown("""
+                                            #### FPS: {}
+                                            """.format(result_fps))
 
                 # sign_detection_time.markdown("""
                 #                             #### Detection Time: {}
@@ -521,6 +519,7 @@ with col2.container():
             while True:
                 result_fps = fps_queue.get()
                 result_sign_detection_time = sign_detection_time_queue.get()
+
                 try:
                     result_tts_time = tts_time_queue.get(timeout=0.5)
                 except queue.Empty:
@@ -528,24 +527,24 @@ with col2.container():
                     result_tts_time = None
 
                 sign_detected_placeholder.markdown("""
-                                            #### Sign: {} 
-                                            """.format(' '.join(sign_detected_queue)))
+                                            #### Kalimat : {} 
+                                            """.format(' '.join(sentence_queue)))
 
                 program_status_placeholder.markdown("""
                                             #### Status : {} 
                                             """.format(' '.join(program_status_queue)))
 
                 fps_placeholder.markdown("""
-                                            #### FPS: {} 
+                                            #### FPS : {} 
                                             """.format(result_fps))
 
                 sign_detection_time.markdown("""
-                                            #### Detection Time: {} 
+                                            #### Detection Time : {} 
                                             """.format(result_sign_detection_time))
 
-                # tts_time.markdown(
-                #     """#### TTS Time: {}
-                #     """.format(result_tts_time))
+                tts_time.markdown(
+                    """#### TTS Time : {}
+                    """.format(result_tts_time))
 
     elif mode_type == settings.MEDIAPIPE:
         ctx = webrtc_streamer(key="example",
