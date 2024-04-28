@@ -21,6 +21,7 @@ import sounddevice as sd
 import soundfile as sf
 import pygame
 from random import random
+import pandas as pd
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout, TimeDistributed
@@ -54,6 +55,10 @@ program_status_queue = deque(maxlen=1)
 
 in_standby = False
 has_spoken = False
+
+if 'data_to_save' not in st.session_state:
+    st.session_state['data_to_save'] = pd.DataFrame(
+        columns=['FPS', 'Sign Detected', 'Sentence', 'Program Status', 'Detection Time'])
 
 pygame.mixer.init()
 
@@ -432,6 +437,22 @@ def format_sentence(sentence):
     return ' '.join(sentence)
 
 
+def update_data(fps, sentence, status, detection_time, tts_time):
+    global data_to_save
+
+    print("Updating data...")
+
+    new_data = {
+        'FPS': fps,
+        'Sentence': sentence,
+        'Program Status': status,
+        'Detection Time': detection_time,
+        'TTS Time': tts_time
+    }
+    st.session_state['data_to_save'] = st.session_state['data_to_save'].append(
+        new_data, ignore_index=True)
+
+
 # LOGIC-END
 
 
@@ -509,6 +530,14 @@ with col2.container():
                               media_stream_constraints={"video": {"width": settings.VIDEO_WIDTH, "height": settings.VIDEO_HEIGHT},
                                                         "audio": False})
 
+        if st.button('Save Data to CSV'):
+            if not st.session_state['data_to_save'].empty:
+                st.session_state['data_to_save'].to_csv(
+                    'output_data.csv', index=False)
+                st.success('Data saved to output_data.csv!')
+            else:
+                st.error('No data to save.')
+
         if ctx.state.playing:
             fps_placeholder = st.empty()
             sign_detected_placeholder = st.empty()
@@ -524,7 +553,7 @@ with col2.container():
                     result_tts_time = tts_time_queue.get(timeout=0.5)
                 except queue.Empty:
                     print("Timeout: No TTS duration data available.")
-                    result_tts_time = None
+                    result_tts_time = 0
 
                 sign_detected_placeholder.markdown("""
                                             #### Kalimat : {} 
@@ -545,6 +574,9 @@ with col2.container():
                 tts_time.markdown(
                     """#### TTS Time : {}
                     """.format(result_tts_time))
+
+                update_data(result_fps, sentence_queue, program_status_queue,
+                            result_sign_detection_time, result_tts_time)
 
     elif mode_type == settings.MEDIAPIPE:
         ctx = webrtc_streamer(key="example",
