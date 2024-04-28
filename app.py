@@ -22,6 +22,7 @@ import soundfile as sf
 import pygame
 from random import random
 import pandas as pd
+import csv
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout, TimeDistributed
@@ -58,7 +59,7 @@ has_spoken = False
 
 if 'data_to_save' not in st.session_state:
     st.session_state['data_to_save'] = pd.DataFrame(
-        columns=['FPS', 'Sign Detected', 'Sentence', 'Program Status', 'Detection Time'])
+        columns=['FPS', 'Sentence', 'Program Status', 'Detection Time', 'TTS Time'])
 
 pygame.mixer.init()
 
@@ -437,20 +438,36 @@ def format_sentence(sentence):
     return ' '.join(sentence)
 
 
-def update_data(fps, sentence, status, detection_time, tts_time):
-    global data_to_save
+def append_to_csv(file_path, data):
+    # Check if the file exists to write headers on first use
+    file_exists = os.path.isfile(file_path)
 
-    print("Updating data...")
+    with open(file_path, 'a', newline='') as csvfile:
+        headers = ['FPS', 'Sentence', 'Program Status',
+                   'Detection Time', 'TTS Time']
+        writer = csv.DictWriter(csvfile, fieldnames=headers, delimiter=';')
+
+        if not file_exists:
+            writer.writeheader()  # Write header only once
+
+        writer.writerow(data)
+
+
+def update_data(fps, sentence, status, detection_time, tts_time):
+    # Convert deques to strings
+    sentence_str = ' '.join(sentence)
+    status_str = ' '.join(status)
 
     new_data = {
         'FPS': fps,
-        'Sentence': sentence,
-        'Program Status': status,
+        'Sentence': sentence_str,
+        'Program Status': status_str,
         'Detection Time': detection_time,
         'TTS Time': tts_time
     }
-    st.session_state['data_to_save'] = st.session_state['data_to_save'].append(
-        new_data, ignore_index=True)
+
+    # Append to CSV, specify the path to your CSV file
+    append_to_csv('output_data.csv', new_data)
 
 
 # LOGIC-END
@@ -530,14 +547,6 @@ with col2.container():
                               media_stream_constraints={"video": {"width": settings.VIDEO_WIDTH, "height": settings.VIDEO_HEIGHT},
                                                         "audio": False})
 
-        if st.button('Save Data to CSV'):
-            if not st.session_state['data_to_save'].empty:
-                st.session_state['data_to_save'].to_csv(
-                    'output_data.csv', index=False)
-                st.success('Data saved to output_data.csv!')
-            else:
-                st.error('No data to save.')
-
         if ctx.state.playing:
             fps_placeholder = st.empty()
             sign_detected_placeholder = st.empty()
@@ -547,6 +556,7 @@ with col2.container():
 
             while True:
                 result_fps = fps_queue.get()
+                print("FPS RESULT = ", result_fps)
                 result_sign_detection_time = sign_detection_time_queue.get()
 
                 try:

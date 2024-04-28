@@ -1,84 +1,70 @@
-FPS,Sign Detected,Sentence,Program Status,Detection Time,TTS Time
-1.7965751039466533,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.6204161643981934,0.0
-16.014356131328057,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.10144925117492676,0.0
-15.643325215108105,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.10399675369262695,0.0
-15.14063453215076,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09648299217224121,0.0
-16.27465466397641,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.10965871810913086,0.0
-15.072947924116047,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.11018490791320801,0.0
-16.08985729630198,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09923267364501953,0.0
-12.189413357977761,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09378409385681152,0.0
-15.835330539509949,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.0967710018157959,0.0
-15.69125558357214,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09398007392883301,0.0
-11.881308832152559,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09792327880859375,0.0
-19.972495761985485,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09755516052246094,0.0
-17.356794067502026,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09797048568725586,0.0
-12.606145125466234,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09709715843200684,0.0
-15.59267190102308,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09990119934082031,0.0
-15.426700896699352,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09443998336791992,0.0
-15.83377627446243,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.10137343406677246,0.0
-15.654360061508143,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09430527687072754,0.0
-15.645951148181858,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.10050487518310547,0.0
-12.38719432959244,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.0931389331817627,0.0
-15.592903772659003,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09957218170166016,0.0
-15.545629081636434,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.10113358497619629,0.0
-15.350930358528409,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09463071823120117,0.0
-15.980614336551577,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09683942794799805,0.0
-15.318189122463588,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09922981262207031,0.0
-12.699583069660976,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09800243377685547,0.0
-15.215221373768886,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.10731124877929688,0.0
-15.959575050987793,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09569334983825684,0.0
-15.835749047620846,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.1009371280670166,0.0
-15.4641261226717,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09549140930175781,0.0
-1.60791986898358,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09560132026672363,0.0
-9.666388572640157,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.11227250099182129,0.0
-9.434200434112713,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09520936012268066,0.0
-10.258458212163976,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09676051139831543,0.0
-9.036215491871442,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09871268272399902,0.0
-8.994379456387712,,"deque(['tolong', 'maaf'], maxlen=5)","deque(['not-standby'], maxlen=1)",0.09289050102233887,0.0
-1.686387608643296,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.6300907135009766,0.0
-11.386179038352951,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09895443916320801,0.0
-20.80208700137381,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.1037604808807373,0.0
-18.82204272123497,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09978961944580078,0.0
-16.761795148463413,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.10600161552429199,0.0
-15.232572244153825,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.10175442695617676,0.0
-12.735676438884418,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09868955612182617,0.0
-15.14484412123663,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09427165985107422,0.0
-15.642333425325765,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09489011764526367,0.0
-12.798281480758199,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.093505859375,0.0
-15.575648195598731,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.0965883731842041,0.0
-12.460944277412684,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09469747543334961,0.0
-15.68233789735805,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09796762466430664,0.0
-15.457116428537208,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09440732002258301,0.0
-11.866719856500618,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09705924987792969,0.0
-17.072988451941434,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09506344795227051,0.0
-15.484393055047937,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.10879230499267578,0.0
-15.665527506059961,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.1006157398223877,0.0
-15.594411106401648,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.0983583927154541,0.0
-15.42846002464549,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09408807754516602,0.0
-12.550168610096259,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09783506393432617,0.0
-15.899017850035442,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.10069704055786133,0.0
-15.19537723032334,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09548306465148926,0.0
-15.90353917204456,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.0940406322479248,0.0
-15.398213584248996,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09982609748840332,0.0
-15.977205372583976,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09560871124267578,0.0
-12.215257189121811,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09992074966430664,0.0
-16.07764548946251,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.0966644287109375,0.0
-15.664942427852743,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09718990325927734,0.0
-15.532848445346408,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09481120109558105,0.0
-1.5820505721598894,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09305286407470703,0.0
-10.003730257540415,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09947371482849121,0.0
-9.545808137245753,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09514093399047852,0.0
-9.921616865053082,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09414434432983398,0.0
-9.433818485255385,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09361076354980469,0.0
-9.731925083065729,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09274792671203613,0.0
-9.931483884411021,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.0987708568572998,0.0
-10.496571468612672,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09610104560852051,0.0
-10.428377850875558,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09608912467956543,0.0
-10.694516971279374,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09340882301330566,0.0
-10.24692968633573,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09663701057434082,0.0
-10.337188754624163,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09267640113830566,1.5729026794433594
-9.970793445522382,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.10069727897644043,0.0
-10.481488793316723,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.0924372673034668,0.0
-10.197849221844281,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.10005307197570801,0.0
-10.40961367596035,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09704422950744629,0.0
-9.025773450999885,,"deque(['tolong', 'saya'], maxlen=5)","deque(['standby'], maxlen=1)",0.09253907203674316,0.0
+FPS,Sentence,Program Status,Detection Time,TTS Time
+2.047654058445204,,standby,0.6140420436859131,0
+12.040038695269015,,standby,0.09873056411743164,0
+20.676976470182254,,standby,0.09657740592956543,0
+20.22140691064946,,standby,0.09704399108886719,0
+16.50572975695756,,standby,0.09709477424621582,0
+12.37619245738431,,standby,0.09574437141418457,0
+15.917178985078252,,standby,0.10242915153503418,0
+15.405566023529065,,standby,0.09497976303100586,0
+15.696423091604482,,standby,0.09480905532836914,0
+15.606015731390599,tolong,not-standby,0.09400033950805664,0
+15.627821019647003,tolong,not-standby,0.09134888648986816,0
+12.578170029898729,tolong,not-standby,0.09240531921386719,0
+15.537566772613783,tolong,not-standby,0.09848618507385254,0
+15.596962642887423,tolong,not-standby,0.09423208236694336,0
+15.644317130665712,tolong,not-standby,0.0924067497253418,0
+15.62077852428978,tolong,standby,0.09279632568359375,0
+15.718776467766476,tolong,standby,0.10179829597473145,0
+12.465684701071128,tolong,standby,0.0986795425415039,0
+15.577441458840132,tolong,standby,0.09599590301513672,0
+15.704886359381435,tolong,standby,0.10468578338623047,0
+15.498010235187614,tolong,standby,0.10100460052490234,0
+15.7463349438932,tolong,standby,0.10372138023376465,0
+12.274419026604352,tolong,standby,0.09572291374206543,0
+15.889862517568883,tolong saya,not-standby,0.09651350975036621,0
+15.324457435147972,tolong saya,not-standby,0.0936274528503418,0
+15.96328026580703,tolong saya,not-standby,0.09677672386169434,0
+15.372197177936595,tolong saya,not-standby,0.09676837921142578,0
+15.837124301465035,tolong saya,not-standby,0.09707355499267578,0
+12.588665019914101,tolong saya,not-standby,0.09712004661560059,0
+15.700300956773024,tolong saya,standby,0.09371304512023926,0
+1.6258989961169648,tolong saya,standby,0.09323906898498535,0
+9.927605215757097,tolong saya,standby,0.09496164321899414,0
+10.140476766113824,tolong saya,standby,0.09211468696594238,0
+10.199287512006517,tolong saya,standby,0.09285950660705566,0
+10.194180939673004,tolong saya,standby,0.09528589248657227,0
+10.336475453266203,tolong saya,standby,0.10288357734680176,0
+9.616698918715665,tolong saya,standby,0.10068058967590332,0
+10.41874144565085,tolong saya,standby,0.09505486488342285,0
+10.437564545710183,tolong saya nama,not-standby,0.09460234642028809,0
+10.416542077892405,tolong saya nama,not-standby,0.09517669677734375,0
+10.65382407477965,tolong saya nama,not-standby,0.09268712997436523,0
+10.605093818189173,tolong saya nama,not-standby,0.09443974494934082,0
+9.95085195325289,tolong saya nama,not-standby,0.09427762031555176,0
+10.39148326805061,tolong saya nama,standby,0.09947466850280762,0
+10.70499836654688,tolong saya nama,standby,0.10264778137207031,0
+10.548762483935304,tolong saya nama,standby,0.0984187126159668,0
+9.63430427402257,tolong saya nama,standby,0.09762024879455566,0
+9.931813123061259,tolong saya nama,standby,0.09473848342895508,0
+10.309974927486358,tolong saya,delete,0.09715151786804199,0
+9.37337475137998,tolong saya,delete,0.09262728691101074,0
+9.803692596808538,tolong saya,delete,0.09418940544128418,0
+9.534329281044563,tolong saya,delete,0.09331393241882324,0
+10.338997924462259,tolong saya,delete,0.09325575828552246,0
+10.254721132876297,tolong saya,delete,0.09774231910705566,0
+10.457628978049048,tolong saya,standby,0.09437084197998047,0
+10.227390546323502,tolong saya,standby,0.09127950668334961,0
+10.22851290055114,tolong saya,standby,0.09816455841064453,0
+10.196287400694288,tolong saya,standby,0.09206795692443848,0
+10.19158004208521,tolong saya,standby,0.0945427417755127,0
+10.558109444971668,tolong saya,standby,0.09338498115539551,0
+10.611291579384114,tolong saya,standby,0.09699058532714844,0
+10.420915851116428,tolong saya,translate,0.09412908554077148,0
+10.739397725788818,tolong saya,translate,0.0951392650604248,0
+10.654121759098148,tolong saya,translate,0.09831953048706055,0
+10.385513827777379,tolong saya,translate,0.0992274284362793,1.6783180236816406
+9.625990585848479,tolong saya,standby,0.09570026397705078,0
+9.822748999412177,tolong saya,standby,0.09322357177734375,0
+10.197402938409136,tolong saya,standby,0.09489321708679199,0
+10.45966314046454,tolong saya,standby,0.09572148323059082,0
