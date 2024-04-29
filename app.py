@@ -444,7 +444,7 @@ def append_to_csv(file_path, data):
 
     with open(file_path, 'a', newline='') as csvfile:
         headers = ['FPS', 'Sentence', 'Program Status',
-                   'Detection Time', 'TTS Time']
+                   'Detection Time', 'TTS Time', 'Complete Time']
         writer = csv.DictWriter(csvfile, fieldnames=headers, delimiter=';')
 
         if not file_exists:
@@ -458,12 +458,15 @@ def update_data(fps, sentence, status, detection_time, tts_time):
     sentence_str = ' '.join(sentence)
     status_str = ' '.join(status)
 
+    complete_time = 30 / fps
+
     new_data = {
         'FPS': fps,
         'Sentence': sentence_str,
         'Program Status': status_str,
         'Detection Time': detection_time,
-        'TTS Time': tts_time
+        'TTS Time': tts_time,
+        'Complete Time': complete_time,
     }
 
     # Append to CSV, specify the path to your CSV file
