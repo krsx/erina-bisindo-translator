@@ -31,9 +31,7 @@
 
 Sign language primarily uses body movements and facial expressions to convey messages. In Indonesia, as of 2015, there were 2.9 million people with hearing impairments. This number is significant compared to the total population of Indonesia. However, this is not matched by the general public's understanding of sign language, resulting in communication barriers and hindering the quality of life for individuals with hearing impairments.
 
-To address this, I developed a web-based application called Erina (Efficient Real-time Indonesia Sign Language Translator) that translates sign language into sentences and converts them into speech. Currently, existing translator systems only display text, so forming sentences and converting them to speech further facilitates more natural communication for individuals with hearing impairments. Erina has successfully translated 8 vocabulary words with an accuracy of up to 100% under various conditions of distance, lighting, subject, and sentence formation.
-
-`[Erina - Effective Real-time BISINDO Translator]` is a Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, diam id rhoncus dapibus, diam nunc faucibus nisi, vel tincidunt nisl nunc vitae libero. Donec euismod, diam id rhoncus dapibus, diam nunc faucibus nisi, vel tincidunt nisl nunc vitae libero.
+To address this, I developed a web-based application called `Erina - Efficient Real-time Indonesia Sign Language Translator` that translates sign language into sentences and converts them into speech. Currently, existing translator systems only display text, so forming sentences and converting them to speech further facilitates more natural communication for individuals with hearing impairments. Erina has successfully translated 8 vocabulary words with an accuracy of up to 100% under various conditions of distance, lighting, subject, and sentence formation.
 
 ## 💻 Tech Stack
 
@@ -41,15 +39,19 @@ To address this, I developed a web-based application called Erina (Efficient Rea
 
 <!-- You can search the logo with https://simpleicons.org and copy the name in logo=copyhere same with color after badge/YourText-YourColor-->
 
--
--
+- Python
+- Tensorflow
+- Streamlit
+- Mediapipe
+- Visual Studio Code
+- NGINX
 
 ## ⚙️ Installation
 
-1. Clone this repository `git clone https://github.com/zer0-911/readme-project-template.git` or click `Clone or Download` button and then click `Download ZIP`
-2. Open this project in Android Studio
-3. Make sure your Android Virtual Device (AVD) is already activated
-4. Run the app
+1. Clone this repository `https://github.com/krsx/erina-bisindo-translator` or click `Clone or Download` button and then click `Download ZIP`
+2. Install the required dependencies
+3. Run the program by using `streamlit run app.py`
+4. Access the program through your browser
 
 <!-- ## 📽️ Demo
 
@@ -62,11 +64,13 @@ To address this, I developed a web-based application called Erina (Efficient Rea
 
 <!-- If Needed -->
 
-- [Google](https://www.google.com)
+- [Long Short Term-Memory (LSTM)](https://keras.io/api/layers/recurrent_layers/lstm/)
+- [MediaPipe](https://ai.google.dev/edge/mediapipe/)
+- [Streamlit](https://streamlit.io/)
 
 ## 🚩 Issue
 
-If you found a bug or an issue, please report by opening a new issue on [this repository](https://github.com/zer0-911/paper-drone/issues).
+If you found a bug or an issue, please report by opening a new issue on [this repository]([https://github.com/zer0-911/paper-drone/issues](https://github.com/krsx/erina-bisindo-translator/issues)).
 
 ## 📝 License
 
