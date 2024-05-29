@@ -338,7 +338,7 @@ def lstm_callback(frame):
 
                         current_loop = asyncio.get_event_loop()
                         asyncio.run_coroutine_threadsafe(
-                            async_tts_and_play(' '.join(sentence_queue)), current_loop)
+                            async_tts_and_play(format_sentence(sentence_queue)), current_loop)
 
                         new_sign_detection_time = time.time()
                         sign_detection_time_queue.put(
@@ -527,9 +527,11 @@ with col2.container():
                 #                             #### Sign: {}
                 #                             """.format(' '.join(sign_detected_queue)))
 
+                print("Ini sentence " + format_sentence(sentence_queue))
+
                 sentence_placeholder.markdown("""
                                             #### Kalimat: {} 
-                                            """.format(' '.join(sentence_queue)))
+                                            """.format(format_sentence(sentence_queue)))
 
                 program_status_placeholder.markdown("""
                                             #### Status : {} 
