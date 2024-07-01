@@ -5,6 +5,7 @@
 <a href="https://github.com/krsx/erina-bisindo-translator">
     <img src="./img/erina.png" alt="readme-project-template">
 </a>
+<img src="./img/bab3-block-diagram-nuc" alt="readme-project-template">
 </div>
 
 <!-- You can make badge by read on official documentation at https://shields.io/badges -->
